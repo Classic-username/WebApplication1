@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using WebApplication1.Extensions;
 
 namespace WebApplication1
 {
@@ -13,6 +14,9 @@ namespace WebApplication1
     {
         public static void Main(string[] args)
         {
+            var connectionInfo = new SqliteQueries();
+            connectionInfo.CreateDB();
+
             CreateHostBuilder(args).Build().Run();
         }
 
