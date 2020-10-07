@@ -6,6 +6,8 @@ using System.Data.SQLite;
 using System.IO;
 using System.Runtime.CompilerServices;
 using System.Xml.Serialization;
+using WebApplication1.DTO;
+using System.Data.Entity.ModelConfiguration.Configuration;
 
 namespace WebApplication1.Extensions
 {
@@ -32,6 +34,21 @@ namespace WebApplication1.Extensions
             }
         }
 
+        public void CreateTableByArgument(AddNewTableDTO dto)
+        {
+            string sql = $"CREATE TABLE {dto.TblName}(ID INTEGER PRIMARY KEY AUTOINCREMENT";
+            for(int i = 0; i < dto.Column.Count; i++)
+            {
+                sql += $", {dto.Column[i]} {dto.DataType[i].ToUpper()}";
+            }
+            sql += ");";
+            conn = new SQLiteConnection("Data Source=semanticdatabase.sqlite;Version=3;");
+            conn.Open();
+            cmd = new SQLiteCommand(sql, conn);
+            cmd.ExecuteNonQuery();
+            conn.Close();
+        }
+
         public void AddValues(string value)
         {
             conn = new SQLiteConnection("Data Source=semanticdatabase.sqlite;Version=3;");
@@ -45,46 +62,51 @@ namespace WebApplication1.Extensions
 
         }
 
-        public string GetSingle(int ID)
+        public DBDTO GetSingle(int ID)
         {
             conn = new SQLiteConnection("Data Source=semanticdatabase.sqlite;Version=3;");
             cmd = new SQLiteCommand();
             conn.Open();
             cmd.Connection = conn;
-            cmd.CommandText = $"SELECT Value FROM Example WHERE ID={ID}";
+            cmd.CommandText = $"SELECT Value, ID FROM Example WHERE ID={ID}";
             reader = cmd.ExecuteReader();
 
-            string val = "";
+            var dto = new DBDTO();
 
             while (reader.Read())
             {
-                val = reader.GetString(0);
+                dto.Value = reader.GetString(0);
+                dto.ID = reader.GetInt32(1);
             }
 
             conn.Close();
 
-            return val;
+            return dto;
         }
 
-        public List<string> GetAll()
+        public List<DBDTO> GetAll()
         {
             conn = new SQLiteConnection("Data Source=semanticdatabase.sqlite;Version=3;");
             cmd = new SQLiteCommand();
             conn.Open();
             cmd.Connection = conn;
-            cmd.CommandText = $"SELECT Value FROM Example";
+            cmd.CommandText = $"SELECT Value, ID FROM Example";
             reader = cmd.ExecuteReader();
 
-            List<string> val = new List<string>();
+            List<DBDTO> valid = new List<DBDTO>();
 
             while (reader.Read())
             {
-                val.Add(reader.GetString(0));
+                valid.Add(new DBDTO() 
+                { 
+                    ID = reader.GetInt32(1),
+                    Value = reader.GetString(0)
+                });
             }
 
             conn.Close();
 
-            return val;
+            return valid;
         }
 
         public void UpdateValue(int ID, string value)

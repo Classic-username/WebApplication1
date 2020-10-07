@@ -23,32 +23,47 @@ namespace WebApplication1.Controllers
 
         // GET: api/<WApp_controller>
         [HttpGet]
-        public IEnumerable<string> Get()
+        public IEnumerable<DBDTO> Get()
         {
             return _sql.GetAll();
         }
 
         // GET api/<WApp_controller>/5
         [HttpGet("{id}")]
-        public string Get([FromRoute] int id)
+        public DBDTO Get([FromRoute] int id)
         {
             if(_sql.GetAll().Count < id || id == 0)
             {
-                return "The list we have is not long enough for the id you provided";
+                throw new Exception("The list we have is not long enough for the id you provided");
             }
 
             return _sql.GetSingle(id);
         }
 
+        // GET api/<WApp_controller>/5
+
         // POST api/<WApp_controller>
         [HttpPost]
         public bool Post([FromBody] ExampleDTO dto)
         {
-            if (string.IsNullOrWhiteSpace(dto.value))
+            if (string.IsNullOrWhiteSpace(dto.Value))
             {
                 return false;
             }
-            _sql.AddValues(dto.value);
+            _sql.AddValues(dto.Value);
+
+            return true;
+        }
+
+        // POST api/<WApp_controller>/newtable
+        [HttpPost("newtable")]
+        public bool PostNewTable([FromBody] AddNewTableDTO dto)
+        {
+            if(dto.Column.Count != dto.DataType.Count || string.IsNullOrWhiteSpace(dto.TblName))
+            {
+                return false;
+            }
+            _sql.CreateTableByArgument(dto);
 
             return true;
         }
@@ -57,14 +72,14 @@ namespace WebApplication1.Controllers
         [HttpPut("{id}")]
         public string Put([FromRoute] int id, [FromBody] ExampleDTO dto)
         {
-            if (string.IsNullOrWhiteSpace(dto.value) || id > _sql.GetAll().Count)
+            if (string.IsNullOrWhiteSpace(dto.Value) || id > _sql.GetAll().Count)
             {
                 throw new Exception("Value cannot be null or empty, or your ID is higher than what we have available.");
             }
 
-            _sql.UpdateValue(id, dto.value);
+            _sql.UpdateValue(id, dto.Value);
 
-            return dto.value;
+            return dto.Value;
 
         }
 
